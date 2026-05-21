@@ -10,16 +10,17 @@
 // - Clearing browser data will reset all badge progress
 // - No user account required - completely privacy-friendly
 // ══════════════════════════════════════════════
-// MVP VERSION: Starting with 2 core badge types
+// BADGE TYPES: Four core engagement metrics
 // - Explorer (org views) - Most common user action
 // - Comparator (comparisons) - Key feature engagement
-// Future: Can add Search Master and Filter Pro based on feedback
+// - Search Master (searches) - Discovery behavior
+// - Filter Pro (filters) - Advanced filtering usage
 // ══════════════════════════════════════════════
 
 const BadgeSystem = (function() {
   const STORAGE_KEY = 'gssoc_badges';
   
-  // MVP: Badge definitions with thresholds (2 types only)
+  // Badge definitions with thresholds (4 types)
   const BADGE_DEFINITIONS = {
     explorer: {
       name: '🔍 Explorer',
@@ -32,6 +33,18 @@ const BadgeSystem = (function() {
       description: 'Compared organizations',
       thresholds: [5, 15, 30, 50],
       levels: ['Bronze', 'Silver', 'Gold', 'Platinum']
+    },
+    search_master: {
+      name: '🔎 Search Master',
+      description: 'Performed searches',
+      thresholds: [10, 30, 75, 150],
+      levels: ['Bronze', 'Silver', 'Gold', 'Platinum']
+    },
+    filter_pro: {
+      name: '🏷️ Filter Pro',
+      description: 'Applied filters',
+      thresholds: [15, 40, 100, 200],
+      levels: ['Bronze', 'Silver', 'Gold', 'Platinum']
     }
   };
 
@@ -43,6 +56,8 @@ const BadgeSystem = (function() {
         return {
           explorer: 0,
           comparator: 0,
+          search_master: 0,
+          filter_pro: 0,
           unlockedBadges: []
         };
       }
@@ -61,6 +76,8 @@ const BadgeSystem = (function() {
         return {
           explorer: 0,
           comparator: 0,
+          search_master: 0,
+          filter_pro: 0,
           unlockedBadges: []
         };
       }
@@ -68,9 +85,11 @@ const BadgeSystem = (function() {
       // Normalize and sanitize values
       const explorer = Math.max(0, Math.floor(parsed.explorer));
       const comparator = Math.max(0, Math.floor(parsed.comparator));
+      const search_master = Math.max(0, Math.floor(parsed.search_master || 0));
+      const filter_pro = Math.max(0, Math.floor(parsed.filter_pro || 0));
       
       // Sanitize unlockedBadges: only allow valid badge IDs (badgeType_level)
-      const validBadgePattern = /^(explorer|comparator)_[0-3]$/;
+      const validBadgePattern = /^(explorer|comparator|search_master|filter_pro)_[0-3]$/;
       const unlockedBadges = [...new Set(
         parsed.unlockedBadges
           .filter(id => typeof id === 'string' && id.length > 0 && validBadgePattern.test(id))
@@ -79,6 +98,8 @@ const BadgeSystem = (function() {
       return {
         explorer,
         comparator,
+        search_master,
+        filter_pro,
         unlockedBadges
       };
     } catch (e) {
@@ -86,6 +107,8 @@ const BadgeSystem = (function() {
       return {
         explorer: 0,
         comparator: 0,
+        search_master: 0,
+        filter_pro: 0,
         unlockedBadges: []
       };
     }
@@ -238,7 +261,7 @@ const BadgeSystem = (function() {
     return data.unlockedBadges.length;
   }
 
-  // Get total possible badges count (MVP: 2 types × 4 levels = 8)
+  // Get total possible badges count (4 types × 4 levels = 16)
   function getTotalBadgesCount() {
     return Object.keys(BADGE_DEFINITIONS).length * 4;
   }
@@ -264,6 +287,8 @@ const BadgeSystem = (function() {
   return {
     trackOrgView: () => trackAction('explorer'),
     trackComparison: () => trackAction('comparator'),
+    trackSearch: () => trackAction('search_master'),
+    trackFilter: () => trackAction('filter_pro'),
     getBadgeStats: getBadgeStats,
     getUnlockedCount: getUnlockedCount,
     getTotalBadgesCount: getTotalBadgesCount,

@@ -1391,7 +1391,7 @@
           </p>
         </div>
         <span class="badge-indicator" id="badgeIndicator">
-          <span class="material-symbols-outlined" style="font-size:16px">emoji_events</span> 0/8
+          <span class="material-symbols-outlined" style="font-size:16px">emoji_events</span> 0/16
         </span>
       </div>
     </div>
@@ -3058,8 +3058,15 @@ if(org.ideas){
     const comp = document.getElementById('complexityFilter').value;
     const sort = document.getElementById('sortSelect')?.value || 'alpha';
 
-    // MVP: Removed Search Master and Filter Pro tracking to keep PR focused
-    // Future enhancement: Can add trackSearch() and trackFilter() based on feedback
+    // Track search and filter usage for badges
+    if (typeof BadgeSystem !== 'undefined') {
+      if (query.length > 0) {
+        BadgeSystem.trackSearch();
+      }
+      if (cat || comp !== 'all' || selectedLanguages.size > 0) {
+        BadgeSystem.trackFilter();
+      }
+    }
 
     filteredOrgs = ORGS.filter(o => {
       const matchSearch = o.name.toLowerCase().includes(query);
